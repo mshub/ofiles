@@ -1,0 +1,12 @@
+#!/bin/bash
+
+echo "Running Attention fire on dmesg ..."; dmesg | attention_fire
+
+echo -e "$YELL_COLOR\nSystem date:$NORM_COLOR"; date
+
+BOGOMIPS=$(cat /proc/cpuinfo | grep bogomips)
+echo -e "$YELL_COLOR\nBogoMIPS values:\n$NORM_COLOR""$BOGOMIPS"
+
+echo -e "\nCurrent LP state:\n"`cat /sys/power/suspend/mode`
+
+echo -e "$YELL_COLOR\nModules installed: $NORM_COLOR"; lsmod

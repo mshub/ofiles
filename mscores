@@ -1,0 +1,39 @@
+#!/bin/bash
+
+GNOME_USER=$(ps -ef | grep "gnome-session --session=" | head -1 | cut -d " " -f 1)
+
+ping -c 1 -q google.com > /dev/null 2>&1
+if [ "$(echo $?)" -ne "0" ]; then
+        exit 0
+fi
+
+MYCRICKETTEAM="IND" 
+curl -s http://www.cricbuzz.com/scores-home | html2text | grep -ie Current_Matches -A 40 > MATCHDATA
+if [ `cat MATCHDATA | grep -c $MYCRICKETTEAM` -gt 0 ]; then
+        cat MATCHDATA | grep -e ^"$MYCRICKETTEAM" -C 2 > OSCORE
+
+        if [ `cat OSCORE | grep '*' -n | cut -d: -f1 | wc -l` -gt 1 ]; then
+                ONE=$(cat OSCORE | grep '*' -n | cut -d: -f1 | head -1); sed -ie '1,'"${ONE}"'d' OSCORE
+                SECOND=$(cat OSCORE | grep '*' -n | cut -d: -f1 | head -1); sed -ie ''"${SECOND}"',$d' OSCORE
+        elif [ `cat OSCORE | grep '*' -n | cut -d: -f1 | wc -l` -eq 1 ]; then
+                OSCORELINES=`cat OSCORE | wc -l`
+                ASTLINE=`cat OSCORE | grep '*' -n | cut -d: -f1`
+                if [ `echo $ASTLINE` -lt `expr $OSCORELINES / 2` ]; then
+                        ONE=$(cat OSCORE | grep '*' -n | cut -d: -f1 | head -1); sed -ie '1,'"${ONE}"'d' OSCORE
+                else
+                        ONE=$(cat OSCORE | grep '*' -n | cut -d: -f1 | head -1); sed -ie ''"${ONE}"',$d' OSCORE
+                fi
+
+        fi
+
+        VAR=`cat OSCORE`
+        if [ -z "$(echo $VAR)" ];then 
+                MSTATUS=$(cat MATCHDATA | grep -e "$MYCRICKETTEAM" -C 2 > OSCORE && cat OSCORE | tail -2)
+                export DISPLAY=:0.0 && sudo -u $GNOME_USER notify-send -i /usr/share/pixmaps/live-1.png "Cricket Updates" "$MSTATUS";
+        else
+                export DISPLAY=:0.0 && sudo -u $GNOME_USER notify-send -i /usr/share/pixmaps/live-1.png "Cricket Updates" "$VAR"
+        fi
+        rm MATCHDATA OSCORE
+else
+        export DISPLAY=:0.0 && sudo -u $GNOME_USER notify-send -i /usr/share/pixmaps/live-1.png "Cricket Updates" "No running matches for $MYCRICKETTEAM"
+fi

@@ -1,0 +1,147 @@
+#!/bin/python
+# Author: Mohit Sharma <mohiter4@gmail.com>
+# "mindicator" - application indicator for Ubuntu desktop
+
+from gi.repository import AppIndicator3 as appindicator, Gtk, GObject
+import os
+
+# VTC and ARB link setup
+userFullName = os.popen("cat /etc/passwd | grep -ie `ps -ef | grep gnome-session | head -1 | cut -d \" \" -f 1` | cut -d: -f5 | sed -e 's/,//g'").read().strip()
+FIRST, SECOND = userFullName.split()
+
+arbLink = "http://hqswqadb01/NVWareHouseBugs/TemplateLinks.aspx?TemplateID=7\&QueryID=102954\&key=qakpi\&arb=" + FIRST + "%20" + SECOND
+vtcLink = "http://hqswqadb01/NVWareHouseBugs/TemplateLinks.aspx?TemplateID=7\&QueryID=103496\&key=qakpi\&req=" + FIRST + "%20" + SECOND
+
+class Mindicator:
+	def menuitem_response(self, w, buf):
+		print buf
+
+	def openurl(self, menuitem, url):
+		os.system("xdg-open %s" % url)
+
+	def openapp(self, menuitem, app):
+		os.system(app)
+
+	def mseparator(self):
+		separator = Gtk.SeparatorMenuItem()
+		self.menu.append(separator)
+
+	def __init__(self):
+		self.ind = appindicator.Indicator.new (
+				"ms-app-indicator",
+				"mindicator",
+				appindicator.IndicatorCategory.APPLICATION_STATUS)
+		self.ind.set_status (appindicator.IndicatorStatus.ACTIVE)
+		
+		# create a menu
+		self.menu = Gtk.Menu()
+
+#------------------------------------------------------------------------------------
+
+"""
+		# create a new menu
+		#menu = Gtk.Menu()
+		listItems=Gtk.MenuItem("Show List")
+
+		listMenu=Gtk.Menu()
+		listItems.set_submenu(listMenu)
+
+		inews = Gtk.MenuItem("Import")
+		listMenu.append(inews)
+	        self.menu.append(listItems)
+"""
+
+#------------------------------------------------------------------------Fav WebLinks
+		FavWebLinks = Gtk.MenuItem("Fav Weblinks")
+		FavWebLinksList=Gtk.Menu()
+		FavWebLinks.set_submenu(FavWebLinksList)
+
+		itemjg = Gtk.MenuItem("Jango Radio")
+		FavWebLinksList.append(itemjg)
+		itemjg.connect("activate", self.openurl, "http://www.jango.com/profiles/54322271?l=0")
+
+		itemfb = Gtk.ImageMenuItem("Facebook");
+		FavWebLinksList.append(itemfb)
+		itemfb.connect("activate", self.openurl, "https://www.facebook.com/")
+
+		itemgp = Gtk.MenuItem("Google+")
+		FavWebLinksList.append(itemgp)
+		itemgp.connect("activate", self.openurl, "https://plus.google.com/")
+
+		itemtw = Gtk.MenuItem("Twitter")
+		FavWebLinksList.append(itemtw)
+		itemtw.connect("activate", self.openurl, "https://www.twitter.com/")
+
+		self.menu.append(FavWebLinks)
+
+		self.mseparator()
+#-----------------------------------------------------------------------AppLinks
+		AppLinks = Gtk.MenuItem("App links")
+		AppLinksList=Gtk.Menu()
+		AppLinks.set_submenu(AppLinksList)   
+
+		itemec = Gtk.MenuItem("Eclipse")
+		AppLinksList.append(itemec)
+		itemec.connect("activate", self.openapp, "/home/mohits/eclipse/eclipse &")
+
+		itemvib = Gtk.MenuItem("Viber")
+		AppLinksList.append(itemvib)
+		itemvib.connect("activate", self.openapp, "sudo /home/mohits/Downloads/Viber/Viber.sh &")
+
+		itemp4v = Gtk.MenuItem("P4V")
+		AppLinksList.append(itemp4v)
+		itemp4v.connect("activate", self.openapp, "/home/mohits/Downloads/p4v-2013.1.611503/bin/p4v &")
+ 
+ 		self.menu.append(AppLinks)
+
+		self.mseparator()
+#-----------------------------------------------------------------------Work WebLinks
+		WorkWebLinks = Gtk.MenuItem("Work Weblinks")
+		WorkWebLinksList=Gtk.Menu()
+		WorkWebLinks.set_submenu(WorkWebLinksList)   
+
+    		itemarb = Gtk.MenuItem("ARBList")
+		WorkWebLinksList.append(itemarb)
+		itemarb.connect("activate", self.openurl, arbLink)
+
+		itemvtc = Gtk.MenuItem("VTCList")
+		WorkWebLinksList.append(itemvtc)
+		itemvtc.connect("activate", self.openurl, vtcLink)
+
+		itemmup = Gtk.MenuItem("Mupdates")
+		WorkWebLinksList.append(itemmup)
+		itemmup.connect("activate", self.openapp, "sudo -u mohits /bin/mupdates &")
+
+		self.menu.append(WorkWebLinks)
+
+		self.mseparator()
+#-----------------------------------------------------------------------------------
+		itemexit = Gtk.MenuItem("Quit")
+		self.menu.append(itemexit)
+		itemexit.connect("activate", exit)
+
+		#self.menu.append(itemCommand1)	
+
+		# this is where you would connect your menu item up with a function:
+		# menu_items.connect("activate", menuitem_response, buf)   
+		# Web urls
+		
+		# Item icons
+		#itemfb.
+		
+		# Applications
+		
+		# Close
+		#itemCommand1.connect("execute", execcommand, "python /bin/mindicator &")
+		
+		#show the items
+		self.menu.show_all()
+		self.ind.set_menu(self.menu)
+	
+	def main(self):
+		Gtk.main()
+		
+if __name__ == "__main__":
+	ind = Mindicator()
+	ind.main()
+

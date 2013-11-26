@@ -1,0 +1,17 @@
+#!/bin/bash
+
+GNOME_USER=$(ps -ef | grep "gnome-session --session=" | head -1 | cut -d " " -f 1)
+
+read W1 W2 T <<< `curl -s http://www.accuweather.com/en/in/pune/204848/weather-forecast/204848 | html2text \
+	| grep -ie "currently" -A 1 | tail -1 | awk '{gsub(/^ +| +$|[[:cntrl:]]/,"" )}1' | cut -d " " --fields=1,2,3`
+
+AMPMTIME=$(date +"%p"); HOURTIME=$(date +"%H")
+ if [ $AMPMTIME = "PM" -a $HOURTIME -gt "8" -o $AMPMTIME = "AM" -a $HOURTIME -lt "5" ]; then 
+	 ICONFOLDER='/usr/share/pixmaps/WeatherIcons/Night'
+ else
+	 ICONFOLDER='/usr/share/pixmaps/WeatherIcons/Day/'
+fi
+
+ICON=$(find $ICONFOLDER -name "$W1*")
+
+export DISPLAY=:0.0 && sudo -u $GNOME_USER notify-send  "~ Weather Forecast ~" "$W1 $W2 $T C" #-i "$ICON"

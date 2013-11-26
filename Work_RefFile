@@ -1,0 +1,19 @@
+Platforms ODM data:
+harmony:  0x300d8011
+ventana:  0x30098011
+seaboard: 0x300d8011
+cardhu:   0x80080105 (A01)
+          0x40080105 (A02+)
+	  0x80080105 (A05)
+beaver:   0x80080105
+Dalmore	  0x80098000
+Laguna	  0x4009C000
+
+
+Flash commands: Dalmore
+./nvflash --bct flash.bct --setbct --configfile flash.cfg --create --bl fastboot.bin --odmdata 0x80098000 --go
+
+
+Flash command: Laguna
+./nvflash --bct bct.cfg --setbct --configfile flash.cfg --create --bl fastboot.bin --odmdata 0x4009C000 --go
+

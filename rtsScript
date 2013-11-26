@@ -1,0 +1,53 @@
+#!/bin/bash
+
+alias hseparator='seq -s= 50 | tr -d [:digit:]'
+alias nvg="nvgstplayer --svs=\"ximagesink\" --svd=\"jpegdec\" --disable-vnative"
+#YELL='\E[7m\E[33m'        # Red BG
+#FINER='\E[7m\E[32m'        # Green BG
+#NORM='\E[0m'              # Normalize BG
+#L4T_HOST_UNAME=mohits
+
+cameraCasesOnBoard=( "nvgstcapture -A -C -b 0" "nvgstcapture -A -C -b 100" "nvgstcapture -A -C -b 25" "nvgstcapture -A -C -b 50" "nvgstcapture -A -C -g 23" "nvgstcapture -A -C -g 22" \
+	"nvgstcapture -A -C -g 21" "nvgstcapture -A -C -g 13" "nvgstcapture -A -C -g 2" "nvgstcapture -A -C -g 0" "nvgstcapture -A -C -g 20" "nvgstcapture -A -C -g 1"\
+	"nvgstcapture -A -C -g 7" "nvgstcapture -A -C -n 0" "nvgstcapture -A -C -n 100" "nvgstcapture -A -C -n 25" "nvgstcapture -A -C -n 50" "nvgstcapture -A -C" \
+	"nvgstcapture -A -C -y -1.0" "nvgstcapture -A -C -y 0.0" "nvgstcapture -A -C -y 1.0" "nvgstcapture -A -C -e 0" "nvgstcapture -A -C -e 100" "nvgstcapture -A -C -e 50" \
+	"nvgstcapture -A -C -F 1" "nvgstcapture -A -C -F 2" "nvgstcapture -A -C -f 1" "nvgstcapture -A -C -f 2" "nvgstcapture -A -C -f 3" "nvgstcapture -A -C -f 0" \
+	"nvgstcapture -A -C -m 2 -V 720x480" "nvgstcapture -A -C -m 2 -V 176x144" "nvgstcapture -A -C -m 2 -V 1920x1080" "nvgstcapture -A -C -m 2 -V 320x240" \
+	"nvgstcapture -A -C -m 2 -V 640x480" "nvgstcapture -A -C -m 2 -V 720x480" "nvgstcapture -A -C -h 0" "nvgstcapture -A -C -h 100" "nvgstcapture -A -C -h 25" \
+	"nvgstcapture -A -C -h 50" "nvgstcapture -A -C -i 100" "nvgstcapture -A -C -i 200" "nvgstcapture -A -C -i 400" "nvgstcapture -A -C -i 800" "nvgstcapture -A -C -i 0" \
+	"nvgstcapture -A -C -o 0" "nvgstcapture -A -C -o 1" "nvgstcapture -A -C -I 1280x720" "nvgstcapture -A -C -I 1280x960" "nvgstcapture -A -C -I 1600x1200" \
+	"nvgstcapture -A -C -I 1280x720" "nvgstcapture -A -C -I 176x144" "nvgstcapture -A -C -I 2048x1536" "nvgstcapture -A -C -I 2240x1680" "nvgstcapture -A -C -I 2560x1920" \
+	"nvgstcapture -A -C -I 320x240" "nvgstcapture -A -C -I 640x480" "nvgstcapture -A -C -I 720x480" "nvgstcapture -A -C -I 800x600" "nvgstcapture -A -C -s 0" \
+	"nvgstcapture -A -C -s 100" "nvgstcapture -A -C -s 25" "nvgstcapture -A -C -s 50" "nvgstcapture -A -C -w 0" "nvgstcapture -A -C -w 2" "nvgstcapture -A -C -w 8" \
+	"nvgstcapture -A -C -w 5" "nvgstcapture -A -C -w 9" "nvgstcapture -A -C -w 7" "nvgstcapture -A -C -w 10" "nvgstcapture -A -C -w 6" "nvgstcapture -A -C -w 1" "nvgstcapture -A -C -w 4" \
+	"nvgstcapture -A -C -Z 1.0" "nvgstcapture -A -C -Z 2.0" "nvgstcapture -A -C -Z 3.0" "nvgstcapture -A -C -Z 4.0" "nvgstcapture -A -C -Z 5.0" "nvgstcapture -A -C -Z 6.0" \
+	"nvgstcapture -A -C -Z 7.0" "nvgstcapture -A -C -Z 8.0" )
+
+cameraCasesUSB=( "nvgstcapture --svs=ximagesink --usbcam -I 640x480" "nvgstcapture --svs=ximagesink --usbcam -H 1" "nvgstcapture --svs=ximagesink --usbcam" \
+	"nvgstcapture --svs=ximagesink --usbcam -V 640x480 -m 2" "nvgstcapture --svs=ximagesink --usbcam -V 640x480 -m 2  -v 2" \
+	"nvgstcapture --svs=ximagesink --usbcam -I 640x480 -H 1" "nvgstcapture --svs=ximagesink --usbcam -V 640x480 -m 2  -H 1" )
+
+function cameraOnBoardTests
+{
+	for i in `seq 1 ${#cameraCasesOnBoard[@]}`;do 
+		echo -e "$FINE_COLOR"; read -p "Continue ..."; echo -e "$NORM_COLOR"
+		hseparator && echo -e "\n$YELL_COLOR Running ${cameraCasesOnBoard[$i]} ... $NORM_COLOR\n";
+		sleep 3
+		${cameraCasesOnBoard[$i]};
+		echo -e "\n$YELL_COLOR Playing ${cameraCasesOnBoard[$i]} ... $NORM_COLOR\n";
+		image=`ls -t | head -1`; nvg -i $image;
+	done
+}
+
+function cameraUsbTests
+{
+	for i in `seq 1 ${#cameraCasesUSB[@]}`;do 
+		echo -e "$FINE_COLOR"; read -p "Continue ..."; echo -e "$NORM_COLOR"
+		hseparator && echo -e "\n$YELL_COLOR Running ${cameraCasesUSB[$i]} ... $NORM_COLOR\n";
+		sleep 3
+		${cameraCasesUSB[$i]};
+		echo -e "\n$YELL_COLOR Playing ${cameraCasesUSB[$i]} ... $NORM_COLOR\n";
+		[ `ls -t | head -1 | grep -c *.jpg` -gt 0 ] && image=`ls -t | head -1`; nvg -i $image;
+		[ `ls -t | head -1 | grep -c *.mp4` -gt 0 ] && image=`ls -t | head -1`; nvgstplayer -i $image;
+	done
+}

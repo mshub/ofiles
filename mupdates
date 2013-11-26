@@ -1,0 +1,108 @@
+#!/bin/bash
+
+# AUTHOR: Mohit Sharma <mohiter4@gmail.com>
+# File:	Display custom updates easily
+# (C) Copyleft: Modify and spread
+
+# Commented out set -e, enabling script to execute even if one of the data fetching fails
+#set -e
+
+ping -c 1 -q google.com > /dev/null 2>&1
+if [ "$(echo $?)" -ne "0" ]; then
+	exit 0
+fi
+
+MONTH=$(date +%B)
+GNOME_USER=$(ps -ef | grep "gnome-session --session=" | head -1 | cut -d " " -f 1)
+
+read UFIRSTNAME USECONDNAME <<< `cat /etc/passwd | grep -ie $GNOME_USER | cut -d: -f5 | sed 's/,//g'`
+
+isnumeric()
+{
+	result=$(echo "$1" | tr -d '[[:digit:]]')
+	echo ${#result}
+}
+
+if [ `isnumeric "$GNOME_USER"` -eq 0 ]; then
+	GNOME_USER=$(cat /etc/passwd | grep -ie $GNOME_USER | cut -d: -f 1)
+fi
+
+# Thought of the day
+QUOTE=$(curl -s http://www.brainyquote.com/quotes_of_the_day.html | html2text | grep -ie "View more great quote_pictures in our gallery" -A 5 | head -5 | tail -2)
+export DISPLAY=:0.0 && sudo -u $GNOME_USER notify-send -i /usr/share/pixmaps/live-1.png "~ Thought of the day ~" "$QUOTE"
+
+#curl -s http://feeds.bbci.co.uk/news/world/rss.xml | grep -ie '<title>' | sed -e 's/<title>\|<\/title>//g'
+
+
+# Displays value of Indian Rupee against foreign currencies
+#<<'COMMENTOUT'
+RAGAINSTUSD=$(curl -s http://www.advfn.com/currency-converter/us-dollar-to-rupee.html | grep -ie rs_to_price | egrep -o [0-9.]+ | tail -1)
+#RAGAINSTEURO=$(curl -s http://www.advfn.com/currency-converter/euro-to-rupee.html | grep -ie rs_to_price | egrep -o [0-9.]+ | tail -1)
+#RAGAINSTGBP=$(curl -s http://www.advfn.com/currency-converter/pound-to-rupee.html | grep -ie rs_to_price | egrep -o [0-9.]+ | tail -1)
+
+# Stock market ticker showing important stock market quotes
+NVDA=$(curl -s http://www.nasdaq.com/symbol/nvda | grep -ie "qwidget-dollar" | egrep -o [0-9.]+)
+#BSE=$(curl -s http://in.finance.yahoo.com/q/bc?s=%5EBSESN | grep -ie yfs_l10_^bsesn | egrep -o [0-9,.]\{6,9} | head -1)
+#NSE=$(curl -s http://in.finance.yahoo.com/q?s=%5ENSEI | grep -ie yfs_l10_^nsei | egrep -o [0-9,.]\{6,9} | head -1)
+#QCOM=$(curl -s http://www.nasdaq.com/symbol/qcom | grep -ie "qwidget-dollar" | egrep -o [\$0-9.]+)
+#GOOG=$(curl -s http://www.nasdaq.com/symbol/goog | grep -ie "qwidget-dollar" | egrep -o [\$0-9.]+)
+#AAPL=$(curl -s http://www.nasdaq.com/symbol/aapl | grep -ie "qwidget-dollar" | egrep -o [\$0-9.]+)
+export DISPLAY=:0.0 && sudo -u $GNOME_USER notify-send -i /usr/share/pixmaps/live-1.png "Stock Ticker" "NVDA	$NVDA
+\$ 1      Rs.$RAGAINSTUSD"
+#€ 1      Rs.$RAGAINSTEURO
+#£ 1      Rs.$RAGAINSTGBP
+#BSE      $BSE
+#NSE      $NSE
+#COMMENTOUT
+
+# Ticker for showing day and month Internet usage 
+#<<'COMMENTOUT'
+INTERFACE=$(route | grep default | awk '{print $NF}')
+if [ `ifconfig -a | grep -ie $INTERFACE | wc -l` -gt 0 ]; then
+	MONTHUSAGE=$(sudo vnstat -u -i $INTERFACE && sudo vnstat -m -i $INTERFACE | grep -ie estimated -B 2 | head -1 | awk '{print $9,$10;}');
+	DAYUSAGE=$(sudo vnstat -u -i $INTERFACE && sudo vnstat -d -i $INTERFACE | grep -ie estimated -B 2 | head -1 | awk '{print $8,$9;}');
+	export DISPLAY=:0.0 && sudo -u $GNOME_USER notify-send -i /usr/share/pixmaps/live-1.png "Current Interface ($INTERFACE) Usage" "Today  $DAYUSAGE
+$MONTH      $MONTHUSAGE"
+fi
+#COMMENTOUT
+
+# Will display the amout raised by http://www.indiegogo.com/projects/ubuntu-edge for the Ubuntu-edge phone
+<<'COMMENTOUT'
+ARAISED=$(curl -s http://www.indiegogo.com/projects/ubuntu-edge | grep -ie "amount medium clearfix" | egrep -o '[0-9,]+')
+$XSTART && sudo -u $GNOME_USER notify-send -i /usr/share/pixmaps/live-1.png "Linux News" "Ubuntu Edge:	\$ $ARAISED"
+COMMENTOUT
+
+# Ticker for showing selected team cricket match scores
+<<'COMMENTOUT'
+MYCRICKETTEAM="IND" 
+curl -s http://www.cricbuzz.com/scores-home | html2text | grep -ie Current_Matches -A 40 > MATCHDATA
+if [ `cat MATCHDATA | grep -c $MYCRICKETTEAM` -gt 0 ]; then
+	cat MATCHDATA | grep -e ^"$MYCRICKETTEAM" -C 2 > OSCORE
+
+	if [ `cat OSCORE | grep '*' -n | cut -d: -f1 | wc -l` -gt 1 ]; then
+		ONE=$(cat OSCORE | grep '*' -n | cut -d: -f1 | head -1); sed -ie '1,'"${ONE}"'d' OSCORE
+		SECOND=$(cat OSCORE | grep '*' -n | cut -d: -f1 | head -1); sed -ie ''"${SECOND}"',$d' OSCORE
+	elif [ `cat OSCORE | grep '*' -n | cut -d: -f1 | wc -l` -eq 1 ]; then
+		OSCORELINES=`cat OSCORE | wc -l`
+		ASTLINE=`cat OSCORE | grep '*' -n | cut -d: -f1`
+		if [ `echo $ASTLINE` -lt `expr $OSCORELINES / 2` ]; then
+			ONE=$(cat OSCORE | grep '*' -n | cut -d: -f1 | head -1); sed -ie '1,'"${ONE}"'d' OSCORE
+		else
+			ONE=$(cat OSCORE | grep '*' -n | cut -d: -f1 | head -1); sed -ie ''"${ONE}"',$d' OSCORE
+		fi
+
+	fi
+
+	VAR=`cat OSCORE`
+	if [ -z "$(echo $VAR)" ];then 
+		MSTATUS=$(cat MATCHDATA | grep -e "$MYCRICKETTEAM" -C 2 > OSCORE && cat OSCORE | tail -2)
+		export DISPLAY=:0.0 && sudo -u $GNOME_USER notify-send -i /usr/share/pixmaps/live-1.png "Cricket Updates" "$MSTATUS";
+	else
+		export DISPLAY=:0.0 && sudo -u $GNOME_USER notify-send -i /usr/share/pixmaps/live-1.png "Cricket Updates" "$VAR"
+	fi
+	rm MATCHDATA OSCORE
+else
+	export DISPLAY=:0.0 && sudo -u $GNOME_USER notify-send -i /usr/share/pixmaps/live-1.png "Cricket Updates" "No running matches for $MYCRICKETTEAM"
+fi
+COMMENTOUT
+
