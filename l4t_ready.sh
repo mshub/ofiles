@@ -24,7 +24,7 @@ cat > $1/custom_functions << 'CUSTOM_EOF'
 #Device out speaker volume controls
 dvolume ()
 {
-	VOLNUMID=$(amixer controls | grep -ie "Speaker Playback Volume" | cut -d "," -f1 | cut -d"=" -f2)
+	VOLNUMID=$(amixer controls | grep -ie "Speaker Volume\|Speaker Playback Volume" | cut -d "," -f1 | cut -d"=" -f2)
 	amixer cset numid=$VOLNUMID $1
 }
 export -f dvolume
@@ -51,7 +51,7 @@ alias doff='xset dpms force off'
 alias dtemp='cat /sys/devices/platform/tegra-i2c.4/i2c-4/4-004c/ext_temperature'
 alias stemp='cat /sys/devices/platform/tegra-i2c.4/i2c-4/4-004c/temperature'
 alias iplay='for i in `ls -t | grep -ie jpg`; do echo -e "\n$YELL_COLOR Playing $i ... $NORM_COLOR\n"; nvg -i $i; done'
-alias vplay='for i in `ls -t | grep -ie mp4`; do echo -e "\n$YELL_COLOR Playing $i ... $NORM_COLOR\n"; nvgstplayer --stats -i $i $NORM_COLOR\n; done'
+alias vplay='for i in `ls -t | grep -ie "mp4\|avi\|wmv\|3gp"`; do echo -e "\n\n$YELL_COLOR Playing $i ... $NORM_COLOR"; sleep 2; nvgstplayer --stats -i $i $NORM_COLOR\n; done'
 alias hseparator='seq -s= 50 | tr -d [:digit:]'
 alias which_governor='cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor'
 
@@ -90,7 +90,7 @@ readonly export FINE_COLOR='\E[7m\E[32m'	# Green BG
 readonly export NORM_COLOR='\E[0m'       	# Normalize BG
 readonly export L4T_HOST_UNAME=mohits
 
-audio_files=( "AAC_01_Alone.mp4" "AMRNB_monsters_10.2.3gp" "AMRWB_monsters_24Kbps_16KHz.3GP" "MP3_01_Rhythm_Is_A_Dancer_12_Mix.mp3" 'MP3_01_Rhythm_Is_A_Dancer_12_Mix.mp3 --cxpr="r10 s25 w5 s12 w20"' "MP3_01_Rhythm_Is_A_Dancer_12_Mix.mp3" 'Hotel-California_ac3_2ch_256_48k.mka --disable-anative' "chakdeindia_Alaw_8bit.wav" "LMRstereo.wav" "chakdeindia_mulaw_8bit.wav" "Blues.wma" "03 Track 3_WMA_9.1_Lossless_VBRQuality_100_44kHz_2channel_16bit_1-pass_VBR.asf" "Track_16_WMA_10_Professional_192 kbps_44kHz_2channel_16bit_1-pass_CBR.wma" )
+audio_files=( "AAC_01_Alone.mp4" "AMRNB_monsters_10.2.3gp" "AMRWB_monsters_24Kbps_16KHz.3GP" "MP3_01_Rhythm_Is_A_Dancer_12_Mix.mp3" 'MP3_01_Rhythm_Is_A_Dancer_12_Mix.mp3 --cxpr="r10 s25 w5 s12 w20"' 'Hotel-California_ac3_2ch_256_48k.mka --disable-anative' "chakdeindia_Alaw_8bit.wav" "LMRstereo.wav" "chakdeindia_mulaw_8bit.wav" "Blues.wma" "03 Track 3_WMA_9.1_Lossless_VBRQuality_100_44kHz_2channel_16bit_1-pass_VBR.asf" "Track_16_WMA_10_Professional_192 kbps_44kHz_2channel_16bit_1-pass_CBR.wma" )
 
 video_files=( "TEGRA_Mpeg2-mp-hl_1080i_30fps_12Mbps.ts" "vantage_point_90s_mpeg4_asp_1080p_10M_30p_cbr_aac128_44.mp4" "3_transformers_divx_1080_30_10M.avi" "Princessandthefrog_XVID_1080p_2M_30fps_Mp3_128_32.avi" "TS_mpeg2_aaclc_2_bahara_main@high.ts" "transformers_h264_bp_1080_30_20M.mp4" "medusa_h264_bp_720_2M.mp4" "h263_aac_VGA.mp4" "TEGRA_h264_hp_1080i_20M_60i_aac.MP4" 'wallpapaer-robo-450x337.jpg --svs="ximagesink" --svd="jpegdec" --disable-vnative -e elem.txt' "medusa_mpeg4_sp_720_30_6M.mp4" "casino_royal_wmv_1080P_24fps_20M_AP_wma_128_48.wmv" "Birds_VC1_sp_cif_15fps_384kbps_wma9_256kbps_44khz.asf" 'casino_royal_wmv_1080P_24fps_20M_AP_wma_128_48.wmv --svs="nvxvimagesink"' "H.264_HP_1080p_Cabac_WP.mp4" "H.264_MP_1080p_Cabac_WP.mp4" )
 
@@ -559,7 +559,7 @@ function wifi_up ()
 	wifi_config_table
 	[ `lsmod | grep -c $MODULE` -eq 0 ] && echo "inserting the driver $MODULE" && modprobe $MODULE
 	wifi_generate_wpa_supplicant
-	[ `ps -ef | grep wpa | grep -c $IFACE` -eq 0 ] && wpa_supplicant -D nl80211 -i $IFACE -c $WPA_SUPP_CONF_FILE -B && sleep 1
+	[ `ps -ef | grep wpa | grep -c $IFACE` -eq 0 ] && wpa_supplicant -D nl80211 -D wext -i $IFACE -c $WPA_SUPP_CONF_FILE -B && sleep 1
 	acquire_ip
 }
 export -f wifi_up
@@ -661,12 +661,14 @@ main ()
 	create_custom_tools $DEF_BIN && chmod a+x $DEF_BIN/custom_functions
     	echo ". /bin/custom_functions" >> $DEF_HOME/.bashrc
     	echo ". /bin/custom_functions" >> $ROOTFS/root/.bashrc
-	echo "PS1='\u@\W$ '" >> $ROOTFS/home/ubuntu/.bashrc
-       	echo "PS1='\u@\W$ '" >> $ROOTFS/root/.bashrc
+	echo "PS1='\u@\W$ '" | tee -a $ROOTFS/home/ubuntu/.bashrc $ROOTFS/root/.bashrc > /dev/null
+	echo "export LD_LIBRARY_PATH=/usr/lib" >> $ROOTFS/root/.bashrc
 	echo "resize >/dev/null 2>&1" >> $ROOTFS/etc/bash.bashrc
 
 	# To enable more verbose Kernel Logging on debug console and on every console that gets opened by default
 	echo "[ \$USER == root ] &&  echo 10 > /proc/sys/kernel/printk" >> $ROOTFS/root/.bashrc
+	echo 'echo -e "System boot time:`dmesg | tail -1 | cut -d"[" -f 2 | cut -d"]" -f1` secs\n"' >>  $ROOTFS/etc/bash.bashrc
+	#echo "dmesg | attention_fire" >> $ROOTFS/etc/bash.bashrc
 
 	HIST_CONTENT="apt-get install ubuntu-desktop -y\n"
 	HIST_CONTENT+="dhclient eth0\n"
@@ -681,7 +683,8 @@ main ()
 	HIST_CONTENT+="wifi_up -a nvtestwireless -p Sp33doflight\n"
 	HIST_CONTENT+="wifi_down\n"
 	echo -e $HIST_CONTENT >> $ROOTFS/root/.bash_history
-<<"COMMENT"
+
+#<<"COMMENT"
 	# Extra setups to ease
 	sed -i 's/qeDTPsnM\/ZMUo//g' $ROOTFS/etc/shadow	# Remove ubuntu user password
 	sed -i 's/ubuntu:x/ubuntu:/g' $ROOTFS/etc/passwd # Remove ubuntu user password
@@ -690,9 +693,9 @@ main ()
 	sed -i 's/root:x/root:/g' $ROOTFS/etc/passwd # Remove Root user password
 
 	#Autologin to root account on UART console
-	sed -i 's/115200 ttyS0/115200 ttyS0 -a root/g' $ROOTFS/etc/init/ttyS0.conf
+	sed -i 's/115200 ttyS0/115200 ttyS0 -a ubuntu/g' $ROOTFS/etc/init/ttyS0.conf
 
-COMMENT
+#COMMENT
 	HOST_INFO="$ROOTFS/home/ubuntu/.host_info"
 	echo -e "host side settings:\nhost_working_Directory|build_directory=$PWD\nhostname/username=$HOSTNAME/$USER" >> $HOST_INFO
 	cp $HOST_INFO $ROOTFS/root/

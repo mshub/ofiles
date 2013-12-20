@@ -28,8 +28,8 @@ class Mindicator:
 
 	def __init__(self):
 		self.ind = appindicator.Indicator.new (
-				"ms-app-indicator",
-				"mindicator",
+				"app-indicator",
+				"debian-logo",
 				appindicator.IndicatorCategory.APPLICATION_STATUS)
 		self.ind.set_status (appindicator.IndicatorStatus.ACTIVE)
 		

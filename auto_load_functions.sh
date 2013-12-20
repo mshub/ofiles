@@ -11,9 +11,10 @@ export Mtest="/media/Linx2/mohits_exp/"
 export PS1='\u@\W$ '
 
 function mkcd () { mkdir -p $1 && cd $1; }
-alias axel="axel -a"
-alias doff="xset dpms force off"
-alias dbuild="find ./debian -type d | xargs chmod 755 && dpkg-deb -b debian && lintian debian.deb"
+#alias ls='ls -shlt'
+alias axel='axel -a'
+alias doff='xset dpms force off'
+alias dbuild='find ./debian -type d | xargs chmod 755 && dpkg-deb -b debian && lintian debian.deb'
 alias minicom='minicom -w -c on -C /tmp/minicom.log'
 alias snotify='sudo -u mohits notify-send -i /usr/share/pixmaps/mnotify.png'
 alias gcc='gcc -Wall'
@@ -81,8 +82,9 @@ function TOT()
 	Cardhu17r1="http://buildbrain/mobile/automatic/l4t-l4t-r17.1_linux-k340_cardhu_dev_git-master_hardfp_release"
 	CardhuMain="http://buildbrain/mobile/automatic/main_linux-k380_cardhu_dev_git-master_hardfp_release"
 	ArdbegMain="http://buildbrain/mobile/automatic/main_linux-k310_ardbeg_dev_git-master_hardfp_release"
+	Ardbegdkernel="http://buildbrain/mobile/virtual/dev-kernel_l4t_ardbeg_dev_git-master_hardfp_release"
 
-        if [ `echo $TOT_ARG | grep -ie http://buildbrain/mobile/automatic/` ]; then
+        if [ `echo $TOT_ARG | grep -ie http://buildbrain/mobile/` ]; then
 		BUILDNO=$(echo $TOT_ARG | egrep -o [0-9]\{7})
 		BUILD_ADDR="$TOT_ARG/full_linux_for_tegra.tbz2"
 
@@ -102,6 +104,8 @@ function TOT()
 		BUILDNO=`curl -s $CardhuMain/ | grep href | tail -1 | egrep -o [0-9]\{7} | head -1` && URL=$CardhuMain; BUILD_ADDR="$URL/$BUILDNO/full_linux_for_tegra.tbz2"
 	elif [ `echo $TOT_ARG | grep -c  "lmain\|Lmain"` -gt 0 ]; then
 		BUILDNO=`curl -s $ArdbegMain/ | grep href | tail -1 | egrep -o [0-9]\{7} | head -1` && URL=$ArdbegMain; BUILD_ADDR="$URL/$BUILDNO/full_linux_for_tegra.tbz2"
+	elif [ `echo $TOT_ARG | grep -c  "ldkernel\|Ldkernel"` -gt 0 ]; then
+		BUILDNO=`curl -s $Ardbegdkernel/ | grep href | tail -1 | egrep -o [0-9]\{7} | head -1` && URL=$Ardbegdkernel; BUILD_ADDR="$URL/$BUILDNO/full_linux_for_tegra.tbz2"
 	else
 		TOTUsage; return 1
 	fi
