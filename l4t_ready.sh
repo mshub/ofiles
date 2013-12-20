@@ -22,7 +22,15 @@ cat > $1/custom_functions << 'CUSTOM_EOF'
 #ip link show, netstat -i
 
 #Device out speaker volume controls
-dvolume ()
+
+function hpvolume ()
+{
+	VOLNUMID=$(amixer controls | grep -ie "HP Playback Volume\|HP Volume" | cut -d "," -f1 | cut -d"=" -f2)
+	amixer cset numid=$VOLNUMID $1
+}
+export -f hpvolume
+
+function dvolume ()
 {
 	VOLNUMID=$(amixer controls | grep -ie "Speaker Volume\|Speaker Playback Volume" | cut -d "," -f1 | cut -d"=" -f2)
 	amixer cset numid=$VOLNUMID $1
@@ -55,6 +63,8 @@ alias vplay='for i in `ls -t | grep -ie "mp4\|avi\|wmv\|3gp"`; do echo -e "\n\n$
 alias hseparator='seq -s= 50 | tr -d [:digit:]'
 alias which_governor='cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor'
 
+alias mmplugininstall1.0='sudo apt-get install gstreamer1.0-tools gstreamer1.0-alsa gstreamer1.0-plugins-base\
+       	gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly gstreamer1.0-plugins-bad gstreamer1.0-libav -y'
 alias mmplugininstall='sudo apt-get install gstreamer-tools gstreamer0.10-alsa gstreamer0.10-plugins-good\
 	gstreamer0.10-plugins-base gstreamer0.10-plugins-ugly gstreamer0.10-plugins-bad gstreamer0.10-ffmpeg -y'
 alias mmallmount='mount -t cifs //10.24.121.7/u_create /mnt -o ro,username=mohits,sec=ntlm'
